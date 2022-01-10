@@ -291,7 +291,7 @@ Note that in the stock JBD FW, you can always clear the password by using the `c
     <tr>
      <td>0x06</td>
      <td>use_password</td>
-     <td>Password bytes</td>
+     <td>bytes</td>
      <td>[length byte (0x06)][6 byte password]</td>
      <td>--</td>
      <td>--</td>
@@ -300,8 +300,8 @@ Note that in the stock JBD FW, you can always clear the password by using the `c
     <tr>
      <td>0x07</td>
      <td>set_password</td>
-     <td>[length byte (0x0c)][6 byte current password][6 byte new password]</td>
      <td>bytes</td>
+     <td>[length byte (0x0c)][6 byte current password][6 byte new password]</td>
      <td>--</td>
      <td>--</td>
      <td>This changes the password.  A single 13-byte payload is provided. Byte 0 is the length (0x0c); next 6 bytes are the current password; final 6 bytes are the new password.  This register is similar to a string register (e.g. "mfg_name") in that the first byte of the payload must be the length. Length is 12.</td>
