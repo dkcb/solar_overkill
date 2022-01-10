@@ -50,10 +50,10 @@ The checksum is simply sum of the payload byte values subtracted from 0x10000 (6
 
 <table border="1">
     <tr>
-     <td>Command byte: Read: 0xA5, Write: 0x5A</th>
-     <td>Register Address Byte</th>
-     <td>Data length byte</th>
-     <td>Data bytes, n = data length byte</th>
+     <td>Command byte: Read: 0xA5, Write: 0x5A</td>
+     <td>Register Address Byte</td>
+     <td>Data length byte</td>
+     <td>Data bytes, n = data length byte</td>
     </tr>
 </table>
 
@@ -74,7 +74,7 @@ The checksum is simply sum of the payload byte values subtracted from 0x10000 (6
 <table border="1">
     <tr>
      <th>Byte offset</th>
-     <th>Data</td>
+     <th>Data</th>
      <th>Format</th>
      <th>Unit</th>
      <th>Field name(s)</th>
@@ -235,9 +235,9 @@ The number of values returned depends on the cell_cnt field from 0x3 "Basic Info
 <table border="1">
     <tr>
      <th>Byte offset</th>
-     <th>Data</td>
+     <th>Data</th>
      <th>Format</th>
-     <th>Field name(s)</t.>
+     <th>Field name(s)</th>
     </tr>
     <tr>
      <td>2 * cell number (starting at zero)</td>
@@ -251,9 +251,9 @@ The number of values returned depends on the cell_cnt field from 0x3 "Basic Info
 <table border="1">
     <tr>
      <th>Byte offset</th>
-     <th>Data</td>
+     <th>Data</th>
      <th>Format</th>
-     <th>Field name(s)</t.>
+     <th>Field name(s)</th>
     </tr>
     <tr>
      <td>0x0</td>
@@ -269,12 +269,60 @@ The number of values returned depends on the cell_cnt field from 0x3 "Basic Info
     </tr>
 </table>
 
+### Passwords
+
+**Thanks to Steve Tecza at [Overkill Solar](https://overkillsolar.com/) for doing the legwork of figuring this out.**
+
+Devices with firmware 0x16 or higher have password capability.
+
+_If_ there is a password set, then the password should be sent to the register password _before_ entering into factory mode by writing the password to the `use_password` register.
+
+Note that in the stock JBD FW, you can always clear the password by using the `clear_password` register.  This effectively makes passwords useless.
+<table border="1">
+    <tr>
+     <th>Register Address</th>
+     <th>Register Name</th>
+     <th>Data</th>
+     <th>Format</th>
+     <th>Unit</th>
+     <th>Field name(s)</th>
+     <th>Notes</th>
+    </tr>
+    <tr>
+     <td>0x06</td>
+     <td>use_password</td>
+     <td>Password bytes</td>
+     <td>[length byte (0x06)][6 byte password]</td>
+     <td>--</td>
+     <td>--</td>
+     <td>Write the current password to this register to enable access to entering "factory mode," below. This register is similar to a string register (e.g. "mfg_name") in that the first byte of the payload must be the length. Length must be 6.</td>
+    </tr>
+    <tr>
+     <td>0x07</td>
+     <td>set_password</td>
+     <td>[length byte (0x0c)][6 byte current password][6 byte new password]</td>
+     <td>bytes</td>
+     <td>--</td>
+     <td>--</td>
+     <td>This changes the password.  A single 13-byte payload is provided. Byte 0 is the length (0x0c); next 6 bytes are the current password; final 6 bytes are the new password.  This register is similar to a string register (e.g. "mfg_name") in that the first byte of the payload must be the length. Length is 12.</td>
+    </tr>
+    <tr>
+     <td>0x09</td>
+     <td>clear_password</td>
+     <td>J1B2D4</td>
+     <td>[length byte (0x6)] 'J1B2D4'</td>
+     <td>--</td>
+     <td>--</td>
+     <td>Write the ASCII value 'J1B2D4' to remove password protection. This register is similar to a string register (e.g. "mfg_name") in that the first byte of the payload must be the length. Length is 6.</td>
+    </tr>
+   </table>
 
 
 ### EEPROM Register Descriptions
 These registers are read/write configuration settings that are stored in EEPROM.  They affect the operation of the BMS.
 
 Unless otherwise noted, all registers are 16 bit big-endian.  Signedness varies.
+
 
 #### Register 0x00 "Enter factory Mode"
 Write the byte sequence 0x56, 0x78 to enter "Factory Mode."  In this mode, the other registers below can be accessed.
@@ -287,9 +335,9 @@ Write the byte sequence 0x28, 0x28 to exit "Factory Mode," update the values in 
 #### Stored registers:
 <table border="1">
     <tr>
-     <th>Register Address</td>
-     <th>Register Name</td>
-     <th>Data</td>
+     <th>Register Address</th>
+     <th>Register Name</th>
+     <th>Data</th>
      <th>Format</th>
      <th>Unit</th>
      <th>Field name(s)</th>
@@ -302,7 +350,7 @@ Write the byte sequence 0x28, 0x28 to exit "Factory Mode," update the values in 
      <td>U16</td>
      <td>10 mAh</td>
      <td>design_cap</td>
-     <th></th>
+     <td></td>
     </tr>
     <tr>
      <td>0x11</td>
@@ -311,7 +359,7 @@ Write the byte sequence 0x28, 0x28 to exit "Factory Mode," update the values in 
      <td>U16</td>
      <td>10 mAh</td>
      <td>cycle_cap</td>
-     <th></th>
+     <td></td>
     </tr>
     <tr>
      <td>0x12</td>
@@ -320,7 +368,7 @@ Write the byte sequence 0x28, 0x28 to exit "Factory Mode," update the values in 
      <td>U16</td>
      <td>1 mV</td>
      <td>cap_100</td>
-     <th></th>
+     <td></td>
     </tr>
     <tr>
      <td>0x32</td>
@@ -329,7 +377,7 @@ Write the byte sequence 0x28, 0x28 to exit "Factory Mode," update the values in 
      <td>U16</td>
      <td>1 mV</td>
      <td>cap_80</td>
-     <th></th>
+     <td></td>
     </tr>
     <tr>
      <td>0x33</td>
@@ -338,7 +386,7 @@ Write the byte sequence 0x28, 0x28 to exit "Factory Mode," update the values in 
      <td>U16</td>
      <td>1 mV</td>
      <td>cap_60</td>
-     <th></th>
+     <td></td>
     </tr>
     <tr>
      <td>0x34</td>
@@ -347,7 +395,7 @@ Write the byte sequence 0x28, 0x28 to exit "Factory Mode," update the values in 
      <td>U16</td>
      <td>1 mV</td>
      <td>cap_40</td>
-     <th></th>
+     <td></td>
     </tr>
     <tr>
      <td>0x35</td>
@@ -356,7 +404,7 @@ Write the byte sequence 0x28, 0x28 to exit "Factory Mode," update the values in 
      <td>U16</td>
      <td>1 mV</td>
      <td>cap_20</td>
-     <th></th>
+     <td></td>
     </tr>
     <tr>
      <td>0x13</td>
@@ -365,7 +413,7 @@ Write the byte sequence 0x28, 0x28 to exit "Factory Mode," update the values in 
      <td>U16</td>
      <td>1 mV</td>
      <td>cap_0</td>
-     <th></th>
+     <td></td>
     </tr>
     <tr>
      <td>0x14</td>
@@ -374,7 +422,7 @@ Write the byte sequence 0x28, 0x28 to exit "Factory Mode," update the values in 
      <td>U16</td>
      <td>0.1%</td>
      <td>dsg_rate</td>
-     <th></th>
+     <td></td>
     </tr>
     <tr>
      <td>0x15</td>
@@ -388,7 +436,7 @@ Write the byte sequence 0x28, 0x28 to exit "Factory Mode," update the values in 
      </td>
      <td> -- </td>
      <td>year, month, day</td>
-     <th></th>
+     <td></td>
     </tr>
     <tr>
      <td>0x16</td>
@@ -397,7 +445,7 @@ Write the byte sequence 0x28, 0x28 to exit "Factory Mode," update the values in 
      <td>U16</td>
      <td>--</td>
      <td>serial_num</td>
-     <th></th>
+     <td></td>
     </tr>
     <tr>
      <td>0x17</td>
@@ -406,7 +454,7 @@ Write the byte sequence 0x28, 0x28 to exit "Factory Mode," update the values in 
      <td>U16</td>
      <td>cycle</td>
      <td>cycle_cnt</td>
-     <th></th>
+     <td></td>
     </tr>
     <tr>
      <td>0x18</td>
@@ -415,7 +463,7 @@ Write the byte sequence 0x28, 0x28 to exit "Factory Mode," update the values in 
      <td>U16</td>
      <td>0.1K</td>
      <td>chgot</td>
-     <th></th>
+     <td></td>
     </tr>
     <tr>
      <td>0x19</td>
@@ -433,7 +481,7 @@ Write the byte sequence 0x28, 0x28 to exit "Factory Mode," update the values in 
      <td>U16</td>
      <td>0.1K</td>
      <td>chgut</td>
-     <th></th>
+     <td></td>
     </tr>
     <tr>
      <td>0x1B</td>
@@ -453,7 +501,7 @@ Write the byte sequence 0x28, 0x28 to exit "Factory Mode," update the values in 
         &nbsp; byte 0: Charge under temp release delay<br>
         &nbsp; byte 1: Charge over temp release delay<br>
      </td>
-     <td>S</td>
+     <td>s</td>
      <td>chgut_delay, chgot_delay</td>
      <td></td>
     </tr>
@@ -466,7 +514,7 @@ Write the byte sequence 0x28, 0x28 to exit "Factory Mode," update the values in 
         &nbsp; byte 0: Discharge under temp release delay<br>
         &nbsp; byte 1: Discharge over temp release delay<br>
      </td>
-     <td>S</td>
+     <td>s</td>
      <td>dsgut_delay, dsgot_delay</td>
      <td></td>
     </tr>
@@ -477,7 +525,7 @@ Write the byte sequence 0x28, 0x28 to exit "Factory Mode," update the values in 
      <td>U16</td>
      <td>0.1K</td>
      <td>dsgot</td>
-     <th></th>
+     <td></td>
     </tr>
     <tr>
      <td>0x1D</td>
@@ -495,7 +543,7 @@ Write the byte sequence 0x28, 0x28 to exit "Factory Mode," update the values in 
      <td>U16</td>
      <td>0.1K</td>
      <td>dsgut</td>
-     <th></th>
+     <td></td>
     </tr>
     <tr>
      <td>0x1F</td>
@@ -551,7 +599,7 @@ Write the byte sequence 0x28, 0x28 to exit "Factory Mode," update the values in 
         &nbsp; byte 0: Pack under volt release delay<br>
         &nbsp; byte 1: Pack over volt release delay<br>
      </td>
-     <td>S</td>
+     <td>s</td>
      <td>puvp_delay, povp_delay</td>
      <td></td>
     </tr>
@@ -600,7 +648,7 @@ Write the byte sequence 0x28, 0x28 to exit "Factory Mode," update the values in 
         &nbsp; byte 0: Cell under volt release delay<br>
         &nbsp; byte 1: Cell over volt release delay<br>
      </td>
-     <td>S</td>
+     <td>s</td>
      <td>cuvp_delay, covp_delay</td>
      <td></td>
     </tr>
@@ -621,7 +669,7 @@ Write the byte sequence 0x28, 0x28 to exit "Factory Mode," update the values in 
         2 unsigned bytes:<br>
         byte 0: chgoc_delay<br>
         byte 1: chgoc_release</td>
-     <td>S</td>
+     <td>s</td>
      <td>chgoc_delay, chgoc_rel</td>
      <td></td>
     </tr>
@@ -642,7 +690,7 @@ Write the byte sequence 0x28, 0x28 to exit "Factory Mode," update the values in 
         2 unsigned bytes:<br>
         byte 0: dsgoc_delay<br>
         byte 1: dsgoc_release</td>
-     <td>S</td>
+     <td>s</td>
      <td>dsgoc_delay, dsgoc_rel</td>
      <td></td>
     </tr>
@@ -782,14 +830,14 @@ Write the byte sequence 0x28, 0x28 to exit "Factory Mode," update the values in 
         <br>
         &nbsp;byte 1: <br>
         &nbsp;&nbsp;bits 7:4: dsgoc2_delay<br>
-        &nbsp;&nbsp;&nbsp;0 = 8mS<br>
-        &nbsp;&nbsp;&nbsp;1 = 20mS<br>
-        &nbsp;&nbsp;&nbsp;2 = 40mS<br>
-        &nbsp;&nbsp;&nbsp;3 = 80mS<br>
-        &nbsp;&nbsp;&nbsp;4 = 160mS<br>
-        &nbsp;&nbsp;&nbsp;5 = 320mS<br>
-        &nbsp;&nbsp;&nbsp;6 = 640mS<br>
-        &nbsp;&nbsp;&nbsp;7 = 1280mS<br>
+        &nbsp;&nbsp;&nbsp;0 = 8ms<br>
+        &nbsp;&nbsp;&nbsp;1 = 20ms<br>
+        &nbsp;&nbsp;&nbsp;2 = 40ms<br>
+        &nbsp;&nbsp;&nbsp;3 = 80ms<br>
+        &nbsp;&nbsp;&nbsp;4 = 160ms<br>
+        &nbsp;&nbsp;&nbsp;5 = 320ms<br>
+        &nbsp;&nbsp;&nbsp;6 = 640ms<br>
+        &nbsp;&nbsp;&nbsp;7 = 1280ms<br>
         &nbsp;&nbsp;bits 3:0: dsgoc2<br>
         &nbsp;&nbsp;&nbsp;0 = 8mV<br>
         &nbsp;&nbsp;&nbsp;1 = 11mV<br>
