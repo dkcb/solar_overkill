@@ -560,12 +560,12 @@ class LayoutGen:
                 (t, 0, lflags),
                 (wx.StaticText(sb, label=unit), 0, lflags),
             ]
-        fgs.AddMany(gen('Pack V', 'pack_mv', 'mv'))
+        fgs.AddMany(gen('Pack V', 'pack_mv', 'mV'))
         fgs.AddMany(gen('Pack I', 'pack_ma', 'mA'))
-        fgs.AddMany(gen('Avg V', 'cell_avg_mv', 'mv'))
-        fgs.AddMany(gen('Max V', 'cell_max_mv', 'mv'))
-        fgs.AddMany(gen('Min V', 'cell_min_mv', 'mv'))
-        fgs.AddMany(gen('Δ V', 'cell_delta_mv', 'mv'))
+        fgs.AddMany(gen('Avg V', 'cell_avg_mv', 'mV'))
+        fgs.AddMany(gen('Max V', 'cell_max_mv', 'mV'))
+        fgs.AddMany(gen('Min V', 'cell_min_mv', 'mV'))
+        fgs.AddMany(gen('Δ V', 'cell_delta_mv', 'mV'))
         fgs.AddMany(gen('Cycles', 'cycle_cnt'))
         fgs.AddMany(gen('Capacity', 'full_cap', 'mAh'))
         fgs.AddMany(gen('Cap Rem', 'cur_cap', 'mAh'))
@@ -743,7 +743,7 @@ class LayoutGen:
         panel.SetSizer(sbs)
         sizer.Add(panel, 0, *defaultBorder)
 
-        def gen(fn, unit1, unit2 = None, unit3 = 'S', spacing=10, digits = 0):
+        def gen(fn, unit1, unit2 = None, unit3 = 's', spacing=10, digits = 0):
             unit2 = unit2 or unit1
             fn_rel = fn + '_rel'
             fn_delay = fn + '_delay'
@@ -777,8 +777,8 @@ class LayoutGen:
         fgs.AddMany(gen('chgut', 'C', digits = 1))
         fgs.AddMany(gen('dsgot', 'C', digits = 1))
         fgs.AddMany(gen('dsgut', 'C', digits = 1))
-        fgs.AddMany(gen('chgoc', 'mA', 'S'))
-        fgs.AddMany(gen('dsgoc', 'mA', 'S'))
+        fgs.AddMany(gen('chgoc', 'mA', 's'))
+        fgs.AddMany(gen('dsgoc', 'mA', 's'))
 
         fgs.Fit(panel)
 
@@ -804,7 +804,7 @@ class LayoutGen:
         ])
         s2.AddMany([ 
                 (EnumChoice(sb, choices = jbd.Dsgoc2DelayEnum, name='dsgoc2_delay'), 0, a),
-                (wx.StaticText(sb, label = 'mS'), 0, a),
+                (wx.StaticText(sb, label = 'ms'), 0, a),
         ])
         
 
@@ -823,7 +823,7 @@ class LayoutGen:
         ])
         s2.AddMany([ 
                 (EnumChoice(sb, choices = jbd.ScDelayEnum, name = 'sc_delay'), 0, a),
-                (wx.StaticText(sb, label = 'uS'), 0, a)
+                (wx.StaticText(sb, label = 'µs'), 0, a)
         ])
 
         fgs.AddMany([
@@ -841,7 +841,7 @@ class LayoutGen:
         ])
         s2.AddMany([
                 (EnumChoice(sb, choices = jbd.CovpHighDelayEnum, name = 'covp_high_delay'), 0, a),
-                (wx.StaticText(sb, label = 'S'), 0, a),
+                (wx.StaticText(sb, label = 's'), 0, a),
         ])
 
         fgs.AddMany([
@@ -859,7 +859,7 @@ class LayoutGen:
         ])
         s2.AddMany([
                 (EnumChoice(sb, choices = jbd.CuvpHighDelayEnum, name = 'cuvp_high_delay'), 0, a),
-                (wx.StaticText(sb, label = 'S'), 0, a),
+                (wx.StaticText(sb, label = 's'), 0, a),
         ])
         fgs.AddMany([
             (wx.StaticText(sb, label = 'CUVP High', name = 'label_cuvp_high'), 0, a), (s1,), 
@@ -871,7 +871,7 @@ class LayoutGen:
         s1 = wx.BoxSizer()
         s1.AddMany([
                 (BetterChoice(sb, choices = [str(i) for i in range(256)], name = 'sc_rel'), 0, lflags),
-                (wx.StaticText(sb, label = 'S'), 0, lflags),
+                (wx.StaticText(sb, label = 's'), 0, lflags),
         ])
         fgs.AddMany([
             (wx.StaticText(sb, label = 'SC Rel', name = f'label_sc_rel'), 0, a), (s1,), 
@@ -1103,8 +1103,8 @@ class LayoutGen:
         fgs.AddMany(gen('Cell 20%', 'cap_20', 'mV'))
         fgs.AddMany(gen('Cell 0%', 'cap_0', 'mV'))
         fgs.AddMany(gen('Dsg Rate', 'dsg_rate', '%', 1))
-        fgs.AddMany(gen('FET ctrl', 'fet_ctrl', 'S'))
-        fgs.AddMany(gen('LED timer', 'led_timer', 'S'))
+        fgs.AddMany(gen('FET ctrl', 'fet_ctrl', 's'))
+        fgs.AddMany(gen('LED timer', 'led_timer', 's'))
 
     def faultCountsLayout(self, parent, sizer, colGap, boxGap):
         panel = wx.Panel(parent)
@@ -1269,6 +1269,8 @@ class LayoutGen:
         gbs.Add(hbs, wx.GBPosition(row,1))
         hbs.Add(wx.TextCtrl(sb, value='', name=f'set_pack_cap_rem', size=self.txtSize5), 0)
         hbs.Add(wx.Button(sb, label='Set', name='set_pack_cap_rem_btn'))
+        hbs.AddSpacer(20)
+        hbs.Add(wx.Button(sb, label='Clear Password', name = 'clear_password_btn'))
  
 class RoundGauge(wx.Panel):
     def __init__(self, *args, **kwargs):
@@ -1893,6 +1895,8 @@ class Main(wx.Frame):
             self.balExit()
         elif n == 'set_pack_cap_rem_btn':
             self.setPackCapRem()
+        elif n == 'clear_password_btn':
+            self.clearPassword()
         else:
             print(f'unknown button {n}')
 
@@ -2031,6 +2035,17 @@ class Main(wx.Frame):
             self.accessLock.acquire()
             self.calTab.Enable(False)
             self.j.balExit()
+        except:
+            traceback.print_exc()
+        finally:
+            self.calTab.Enable(True)
+            self.accessLock.release()
+    
+    def clearPassword(self):
+        try:
+            self.accessLock.acquire()
+            self.calTab.Enable(False)
+            self.j.clearPassword()
         except:
             traceback.print_exc()
         finally:
