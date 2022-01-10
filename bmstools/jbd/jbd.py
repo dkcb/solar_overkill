@@ -27,10 +27,10 @@ from functools import partial
 from . import persist
 
 from .registers import (BaseReg, Unit, DateReg, IntReg, 
-                        TempReg, TempRegRO, DelayReg, 
-                        ScDsgoc2Reg, CxvpHighDelayScRelReg,
-                        BitfieldReg, StringReg, ErrorCountReg,
-                        BasicInfoReg, CellInfoReg, DeviceInfoReg, ReadOnlyException)
+                        TempReg, TempRegRO, DelayReg, UsePasswordReg,
+                        SetPasswordReg, ScDsgoc2Reg, CxvpHighDelayScRelReg,
+                        BitfieldReg, StringReg, ErrorCountReg, BasicInfoReg, 
+                        CellInfoReg, DeviceInfoReg, ReadOnlyException)
 
 __all__ = 'JBD'
 
@@ -52,6 +52,9 @@ class JBD:
     I_CAL_CHG_REG       = 0xAE
     I_CAL_DSG_REG       = 0xAF
 
+    RESET_PASSWORD_REG  = 0x09
+    USE_PASSWORD_REG    = 0X06
+    SET_PASSWORD_REG    = 0X07
     CHG_DSG_EN_REG      = 0xE1
     BAL_CTRL_REG        = 0xE2
 
@@ -68,6 +71,7 @@ class JBD:
         self._lock = threading.RLock()
         self._dbgTime = 0
         self.timeout = timeout
+        self.password = bytes(6)
         self.debug = debug
         self.writeNVMOnExit = False
         self.bkgReadThread = None
@@ -222,7 +226,6 @@ class JBD:
     def writeCmd(self, reg, data = []):
         return self.cmd(self.WRITE, reg, data)
 
-
     def bkgReadWorker(self):
         self.dbgPrint('bkgReadWorker started')
         while self.bkgReadRun:
@@ -268,7 +271,7 @@ class JBD:
     def _readPacket(self, timeout = None):
         t = timeout if timeout is not None else self.timeout
         then = time.time() + t
-        self.dbgPrint(f'timeout is {t}')
+        #self.dbgPrint(f'timeout is {t}')
         d = []
         msgLen = 0
         complete = False
@@ -276,7 +279,7 @@ class JBD:
             byte = self.s.read()
             if not byte: 
                 continue
-            self.dbgPrint(f'raw rx byte: {byte}')
+            #self.dbgPrint(f'raw rx byte: {byte}')
             byte = byte[0]
             if not d and byte != self.START: continue
             then = time.time() + t
@@ -351,15 +354,29 @@ class JBD:
     def enterFactory(self):
         try:
             self.open()
+            if 1:
+                cnt = 5
+                while cnt:
+                    try:
+                        self._sendPassword()
+                        self.dbgPrint('password accepted')
+                        break
+                    except Exception as e:
+                        self.dbgPrint(f'password exception {repr(e)}')
+                    cnt -= 1
+                    time.sleep(.3)
+                else:
+                    raise BMSError('password not accepted')
+
             cnt = 5
             while cnt:
                 cmd = self.writeCmd(0, [0x56, 0x78])
                 self.s.write(cmd)
                 ok, x = self.readPacket()
                 if ok and x is not None: # empty payload is valid
-                    self.dbgPrint('pong')
+                    self.dbgPrint('enter factory: success')
                     return x
-                self.dbgPrint('no response')
+                self.dbgPrint('enter factory: no response')
                 cnt -= 1
                 time.sleep(.3)
             return False
@@ -373,6 +390,63 @@ class JBD:
             self.s.write(cmd)
             ok, d = self.readPacket()
             return ok
+        finally:
+            self.close()
+
+    @property
+    def password(self):
+        return self._password
+
+    @password.setter
+    def password(self, value):
+        assert len(value) == 6
+        if isinstance(value, str):
+            self._password = bytes(value, 'utf-8')
+        else:
+            self._password = bytes(value)
+
+    def _sendPassword(self):
+        reg = UsePasswordReg('x', self.USE_PASSWORD_REG)
+        reg.set('x', self._password)
+        cmd = self.writeCmd(reg.adx, reg.pack())
+        self.dbgPrint(f'sendPassword payload is {cmd}')
+        self.s.write(cmd)
+        ok, payload = self.readPacket()
+        if not ok: raise BMSError()
+        if payload is None: raise TimeoutError()
+
+    def setPassword(self, password):
+        if isinstance(password, str):
+            password = bytes(password, 'utf-8')
+        with self.factoryContext():
+            reg = SetPasswordReg('x', self.SET_PASSWORD_REG)
+            reg.set('x', self._password)
+            reg.setNewPassword(password)
+            cmd = self.writeCmd(reg.adx, reg.pack())
+            self.s.write(cmd)
+            ok, payload = self.readPacket()
+            if not ok: raise BMSError()
+            if payload is None: raise TimeoutError()
+
+        self._password = password
+
+    def clearPassword(self):
+        try:
+            self.open()
+            cnt = 5 
+            while cnt:
+                try:
+                    reg = UsePasswordReg('x', self.RESET_PASSWORD_REG)
+                    reg.set('x', b'J1B2D4')
+                    cmd = self.writeCmd(reg.adx, reg.pack())
+                    self.dbgPrint(f'clearPassword payload {cmd}')
+                    self.s.write(cmd)
+                    ok, payload = self.readPacket()
+                    if not ok: raise BMSError()
+                    if payload is None: raise TimeoutError()
+                    break
+                except:
+                    cnt -= 1
         finally:
             self.close()
 
