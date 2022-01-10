@@ -168,7 +168,7 @@ class FwDebugDialog(PluginBase, wx.Dialog):
     
     def syncFromApp(self, _):
         if self.cellInfo:
-            # cell mv
+            # cell mV
             for i, v in enumerate(self.cellInfo.values()):
                 n = f'cell_mv_{i}'
                 control = wx.FindWindowByName(n, self)
