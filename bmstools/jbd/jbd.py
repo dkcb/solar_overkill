@@ -338,7 +338,11 @@ class JBD:
 
     def __enter__(self):
         self.open()
-        self.enterFactory()
+        try:
+            self.enterFactory()
+        except:
+            self.close()
+            raise
 
     def __exit__(self, type, value, traceback):
         try:
