@@ -1799,7 +1799,7 @@ class Main(wx.Frame):
             traceback.print_tb(evt.data.__traceback__)
             print(f'eeprom error: {repr(evt.data)}', file=sys.stderr)
             if isinstance(evt.data, jbd.BMSError):
-                wx.LogError(f'Unable to communicate with BMS')
+                wx.LogError(f'Unable to communicate with BMS{f" ({evt.data})" if evt.data else ""}')
         elif evt.data is not None:
             self.scatterEeprom(evt.data)
         else:
