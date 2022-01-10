@@ -363,14 +363,13 @@ class JBD:
                 while cnt:
                     try:
                         self._sendPassword()
-                        self.dbgPrint('password accepted')
                         break
                     except Exception as e:
                         self.dbgPrint(f'password exception {repr(e)}')
                     cnt -= 1
                     time.sleep(.3)
                 else:
-                    raise BMSError('password not accepted')
+                    raise BMSError('bad password')
 
             cnt = 5
             while cnt:
