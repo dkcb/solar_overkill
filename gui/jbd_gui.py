@@ -324,6 +324,38 @@ class AboutDialog(wx.Dialog):
         self.SetMinSize(wx.Size(width*2, height*2))
         print(f'onload called: {width}x{height}')
 
+class PasswordErrorDialog(wx.Dialog):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.SetTitle('Password Error')
+
+        vbox = wx.BoxSizer(wx.VERTICAL)
+        hbox = wx.BoxSizer()
+        hbox.Add(wx.StaticText(self, label="BMS reports incorrect password"), 0, wx.ALIGN_CENTER , border = 5)
+        vbox.Add(hbox, 1, wx.ALIGN_CENTER_HORIZONTAL | wx.TOP, 5)
+
+        hbox = wx.BoxSizer(wx.HORIZONTAL)
+
+        clearButton = wx.Button(self, label='Clear Password')
+        clearButton.SetDefault()
+        closeButton = wx.Button(self, label='Ok', name = 'close_btn')
+        hbox.Add(clearButton, flag=wx.ALL, border = 5)
+        hbox.Add(closeButton, flag=wx.ALL, border=5)
+
+        #vbox.Add(hbox, flag=wx.ALIGN_CENTER|wx.ALL, border=10)
+        vbox.Add(hbox)
+
+        clearButton.Bind(wx.EVT_BUTTON, self.onButton)
+        closeButton.Bind(wx.EVT_BUTTON, self.onButton)
+        self.SetSizerAndFit(vbox)
+
+    def onButton(self, e):
+        n = e.EventObject.Name
+        if n == 'close_btn':
+            self.EndModal(wx.ID_CANCEL)
+        else:
+            self.EndModal(wx.ID_OK)
+
 class SerialPortDialog(wx.Dialog):
 
     def __init__(self, *args, **kwargs):
@@ -1676,6 +1708,15 @@ class Main(wx.Frame):
         self.debugWindow.Hide()
         self.debugWindowItem.Check(False)
 
+    def showPasswordError(self):
+        with PasswordErrorDialog(None) as d:
+            ret = d.ShowModal()
+
+            if ret == wx.ID_CANCEL:
+                return
+            else:
+                self.clearPassword()
+
     def chooseSerialPort(self):
         with SerialPortDialog(None, port = self.j.serial.port) as d:
             if d.ShowModal() == wx.ID_CANCEL:
@@ -1798,7 +1839,9 @@ class Main(wx.Frame):
         if isinstance(evt.data, Exception):
             traceback.print_tb(evt.data.__traceback__)
             print(f'eeprom error: {repr(evt.data)}', file=sys.stderr)
-            if isinstance(evt.data, jbd.BMSError):
+            if isinstance(evt.data, jbd.BMSPasswordError):
+                self.showPasswordError()
+            elif isinstance(evt.data, jbd.BMSError):
                 wx.LogError(f'Unable to communicate with BMS{f" ({evt.data})" if evt.data else ""}')
         elif evt.data is not None:
             self.scatterEeprom(evt.data)
@@ -2046,7 +2089,9 @@ class Main(wx.Frame):
             self.accessLock.acquire()
             self.calTab.Enable(False)
             self.j.clearPassword()
+            wx.LogError(f'Password successfully cleared')
         except:
+            wx.LogError(f'Password clear failed')
             traceback.print_exc()
         finally:
             self.calTab.Enable(True)
