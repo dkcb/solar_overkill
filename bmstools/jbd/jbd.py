@@ -35,6 +35,7 @@ from .registers import (BaseReg, Unit, DateReg, IntReg,
 __all__ = 'JBD'
 
 class BMSError(Exception): pass
+class BMSPasswordError(BMSError): pass
 
 class JBD:
     START               = 0xDD
@@ -369,7 +370,7 @@ class JBD:
                     cnt -= 1
                     time.sleep(.3)
                 else:
-                    raise BMSError('bad password')
+                    raise BMSPasswordError('bad password')
 
             cnt = 5
             while cnt:

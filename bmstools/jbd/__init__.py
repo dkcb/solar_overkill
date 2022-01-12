@@ -16,7 +16,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from .jbd import JBD, BMSError
+from .jbd import JBD, BMSError, BMSPasswordError
 from .persist import JBDPersist
 from .registers import (Dsgoc2Enum, Dsgoc2DelayEnum, 
                         ScEnum, ScDelayEnum, CuvpHighDelayEnum, 
