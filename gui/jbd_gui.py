@@ -2089,9 +2089,9 @@ class Main(wx.Frame):
             self.accessLock.acquire()
             self.calTab.Enable(False)
             self.j.clearPassword()
-            wx.LogError(f'Password successfully cleared')
+            wx.LogMessage(f'Password successfully cleared')
         except:
-            wx.LogError(f'Password clear failed')
+            wx.LogMessage(f'Password clear failed')
             traceback.print_exc()
         finally:
             self.calTab.Enable(True)
