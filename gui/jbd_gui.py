@@ -46,6 +46,7 @@ from bmstools.jbd.logging import Logger
 appName = 'Overkill Solar BMS Tools'
 appVersion = bmstools.version
 appUrl = 'https://gitlab.com/Overkill-Solar-LLC/overkill-solar-bms-tools'
+SalesUrl = 'https://overkillsolar.com/'
 author = 'Overkill Solar LLC'
 authorEmail = 'Support@OverkillSolar.com'
 authorFullEmail = '"Overkill Solar LLC" <Support@OverkillSolar.com>'
@@ -289,7 +290,7 @@ class AboutDialog(wx.Dialog):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.SetTitle(f'About {appName}')
-        self.SetSize((700,920))
+        self.SetSize((1200,1200))
 
         vbox = wx.BoxSizer(wx.VERTICAL)
 
@@ -298,15 +299,17 @@ class AboutDialog(wx.Dialog):
                 appName,
                 appVersion,
                 '',
+                'Buy a BMS:',
+                SalesUrl,
+                '',
                 authorEmail, 
                 '',
-                appUrl,
+                'Open Source Application Repo: ', appUrl,
                 '',
                 'Forked from: JBD BMS Tools by ', oldauthor,
-                '',
                 oldappUrl
             ]
-            t = wx.TextCtrl(self, style=wx.TE_MULTILINE | wx.TE_READONLY | wx.TE_AUTO_URL, size = (200,200))
+            t = wx.TextCtrl(self, style=wx.TE_MULTILINE | wx.TE_READONLY | wx.TE_AUTO_URL, size = (400,400))
             t.SetValue('\n'.join(lines))
             vbox.Add(t, 1, wx.EXPAND)
 
@@ -1500,7 +1503,9 @@ class Main(wx.Frame):
         self.pluginMenu = wx.Menu()
         self.debugWindowItem = self.fileMenu.Append(wx.ID_ANY, 'Debug Window', 'Show debug window', kind = wx.ITEM_CHECK)
         self.aboutItem = self.fileMenu.Append(wx.ID_ABOUT, 'About', f'About {appName}')
-        self.websiteItem = self.fileMenu.Append(wx.ID_ANY, f'{appName} website', f'{appName} website')
+        self.SaleswebsiteItem = self.fileMenu.Append(wx.ID_ANY, f'Buy a BMS from Overkill Solar', f'Buy a BMS from Overkill Solar')
+        self.websiteItem = self.fileMenu.Append(wx.ID_ANY, f'Application Repo/ Bug Report', f'Application Repo/ Bug Report')
+        
 
         for n,m in self.plugins.items():
             try:
@@ -1524,6 +1529,7 @@ class Main(wx.Frame):
         self.SetMenuBar(self.menuBar)
         self.Bind(wx.EVT_MENU, self.onDebugWindowToggle, self.debugWindowItem)
         self.Bind(wx.EVT_MENU, self.onWebsite, self.websiteItem)
+        self.Bind(wx.EVT_MENU, self.onSalesWebsite, self.SaleswebsiteItem)
         self.Bind(wx.EVT_MENU, self.onAbout, self.aboutItem)
         self.Bind(wx.EVT_MENU, self.onQuit, self.quitItem)
 
@@ -1704,6 +1710,12 @@ class Main(wx.Frame):
         wx.BeginBusyCursor()
         import webbrowser
         webbrowser.open(appUrl)
+        wx.EndBusyCursor() 
+
+    def onSalesWebsite(self, evt):
+        wx.BeginBusyCursor()
+        import webbrowser
+        webbrowser.open(SalesUrl)
         wx.EndBusyCursor() 
     
     def onDebugWindowToggle(self, evt):
@@ -2368,10 +2380,10 @@ class JBDApp(wx.App):
 
         if not self.cli_args or not self.cli_args.no_warning:
             # startup warning
-            d = wx.MessageDialog(None, warningMsg)
-            d.ShowModal()
+            #d = wx.MessageDialog(None, warningMsg)
+            #d.ShowModal()
 
-        return True
+            return True
 
 def main():
     import argparse
