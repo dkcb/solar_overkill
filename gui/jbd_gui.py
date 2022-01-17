@@ -43,12 +43,17 @@ import bmstools
 import bmstools.jbd as jbd
 from bmstools.jbd.logging import Logger
 
-appName = 'JBD BMS Tools'
+appName = 'Overkill Solar BMS Tools'
 appVersion = bmstools.version
-appUrl = 'https://gitlab.com/MrSurly/bms-tools'
-author = 'Eric Poulsen'
-authorEmail = 'eric@zyxod.com'
-authorFullEmail = '"Eric Poulsen" <eric@zyxod.com>'
+appUrl = 'https://gitlab.com/Overkill-Solar-LLC/overkill-solar-bms-tools'
+author = 'Overkill Solar LLC'
+authorEmail = 'Support@OverkillSolar.com'
+authorFullEmail = '"Overkill Solar LLC" <Support@OverkillSolar.com>'
+
+oldappUrl = 'https://gitlab.com/MrSurly/bms-tools'
+oldauthor = 'Eric Poulsen'
+oldauthorEmail = 'eric@zyxod.com'
+oldauthorFullEmail = '"Eric Poulsen" <eric@zyxod.com>'
 releaseDate = 'N/A'
 appNameWithVersion = f'{appName} {appVersion}'
 
@@ -284,7 +289,7 @@ class AboutDialog(wx.Dialog):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.SetTitle(f'About {appName}')
-        self.SetSize((700,700))
+        self.SetSize((700,920))
 
         vbox = wx.BoxSizer(wx.VERTICAL)
 
@@ -295,7 +300,11 @@ class AboutDialog(wx.Dialog):
                 '',
                 authorEmail, 
                 '',
-                appUrl
+                appUrl,
+                '',
+                'Forked from: JBD BMS Tools by ', oldauthor,
+                '',
+                oldappUrl
             ]
             t = wx.TextCtrl(self, style=wx.TE_MULTILINE | wx.TE_READONLY | wx.TE_AUTO_URL, size = (200,200))
             t.SetValue('\n'.join(lines))
