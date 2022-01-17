@@ -324,6 +324,38 @@ class AboutDialog(wx.Dialog):
         self.SetMinSize(wx.Size(width*2, height*2))
         print(f'onload called: {width}x{height}')
 
+class PasswordErrorDialog(wx.Dialog):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.SetTitle('Password Error')
+
+        vbox = wx.BoxSizer(wx.VERTICAL)
+        hbox = wx.BoxSizer()
+        hbox.Add(wx.StaticText(self, label="BMS reports incorrect password"), 0, wx.ALIGN_CENTER , border = 5)
+        vbox.Add(hbox, 1, wx.ALIGN_CENTER_HORIZONTAL | wx.TOP, 5)
+
+        hbox = wx.BoxSizer(wx.HORIZONTAL)
+
+        clearButton = wx.Button(self, label='Clear Password')
+        clearButton.SetDefault()
+        closeButton = wx.Button(self, label='Ok', name = 'close_btn')
+        hbox.Add(clearButton, flag=wx.ALL, border = 5)
+        hbox.Add(closeButton, flag=wx.ALL, border=5)
+
+        #vbox.Add(hbox, flag=wx.ALIGN_CENTER|wx.ALL, border=10)
+        vbox.Add(hbox)
+
+        clearButton.Bind(wx.EVT_BUTTON, self.onButton)
+        closeButton.Bind(wx.EVT_BUTTON, self.onButton)
+        self.SetSizerAndFit(vbox)
+
+    def onButton(self, e):
+        n = e.EventObject.Name
+        if n == 'close_btn':
+            self.EndModal(wx.ID_CANCEL)
+        else:
+            self.EndModal(wx.ID_OK)
+
 class SerialPortDialog(wx.Dialog):
 
     def __init__(self, *args, **kwargs):
@@ -560,12 +592,12 @@ class LayoutGen:
                 (t, 0, lflags),
                 (wx.StaticText(sb, label=unit), 0, lflags),
             ]
-        fgs.AddMany(gen('Pack V', 'pack_mv', 'mv'))
+        fgs.AddMany(gen('Pack V', 'pack_mv', 'mV'))
         fgs.AddMany(gen('Pack I', 'pack_ma', 'mA'))
-        fgs.AddMany(gen('Avg V', 'cell_avg_mv', 'mv'))
-        fgs.AddMany(gen('Max V', 'cell_max_mv', 'mv'))
-        fgs.AddMany(gen('Min V', 'cell_min_mv', 'mv'))
-        fgs.AddMany(gen('Δ V', 'cell_delta_mv', 'mv'))
+        fgs.AddMany(gen('Avg V', 'cell_avg_mv', 'mV'))
+        fgs.AddMany(gen('Max V', 'cell_max_mv', 'mV'))
+        fgs.AddMany(gen('Min V', 'cell_min_mv', 'mV'))
+        fgs.AddMany(gen('Δ V', 'cell_delta_mv', 'mV'))
         fgs.AddMany(gen('Cycles', 'cycle_cnt'))
         fgs.AddMany(gen('Capacity', 'full_cap', 'mAh'))
         fgs.AddMany(gen('Cap Rem', 'cur_cap', 'mAh'))
@@ -743,7 +775,7 @@ class LayoutGen:
         panel.SetSizer(sbs)
         sizer.Add(panel, 0, *defaultBorder)
 
-        def gen(fn, unit1, unit2 = None, unit3 = 'S', spacing=10, digits = 0):
+        def gen(fn, unit1, unit2 = None, unit3 = 's', spacing=10, digits = 0):
             unit2 = unit2 or unit1
             fn_rel = fn + '_rel'
             fn_delay = fn + '_delay'
@@ -777,8 +809,8 @@ class LayoutGen:
         fgs.AddMany(gen('chgut', 'C', digits = 1))
         fgs.AddMany(gen('dsgot', 'C', digits = 1))
         fgs.AddMany(gen('dsgut', 'C', digits = 1))
-        fgs.AddMany(gen('chgoc', 'mA', 'S'))
-        fgs.AddMany(gen('dsgoc', 'mA', 'S'))
+        fgs.AddMany(gen('chgoc', 'mA', 's'))
+        fgs.AddMany(gen('dsgoc', 'mA', 's'))
 
         fgs.Fit(panel)
 
@@ -804,7 +836,7 @@ class LayoutGen:
         ])
         s2.AddMany([ 
                 (EnumChoice(sb, choices = jbd.Dsgoc2DelayEnum, name='dsgoc2_delay'), 0, a),
-                (wx.StaticText(sb, label = 'mS'), 0, a),
+                (wx.StaticText(sb, label = 'ms'), 0, a),
         ])
         
 
@@ -823,7 +855,7 @@ class LayoutGen:
         ])
         s2.AddMany([ 
                 (EnumChoice(sb, choices = jbd.ScDelayEnum, name = 'sc_delay'), 0, a),
-                (wx.StaticText(sb, label = 'uS'), 0, a)
+                (wx.StaticText(sb, label = 'µs'), 0, a)
         ])
 
         fgs.AddMany([
@@ -841,7 +873,7 @@ class LayoutGen:
         ])
         s2.AddMany([
                 (EnumChoice(sb, choices = jbd.CovpHighDelayEnum, name = 'covp_high_delay'), 0, a),
-                (wx.StaticText(sb, label = 'S'), 0, a),
+                (wx.StaticText(sb, label = 's'), 0, a),
         ])
 
         fgs.AddMany([
@@ -859,7 +891,7 @@ class LayoutGen:
         ])
         s2.AddMany([
                 (EnumChoice(sb, choices = jbd.CuvpHighDelayEnum, name = 'cuvp_high_delay'), 0, a),
-                (wx.StaticText(sb, label = 'S'), 0, a),
+                (wx.StaticText(sb, label = 's'), 0, a),
         ])
         fgs.AddMany([
             (wx.StaticText(sb, label = 'CUVP High', name = 'label_cuvp_high'), 0, a), (s1,), 
@@ -871,7 +903,7 @@ class LayoutGen:
         s1 = wx.BoxSizer()
         s1.AddMany([
                 (BetterChoice(sb, choices = [str(i) for i in range(256)], name = 'sc_rel'), 0, lflags),
-                (wx.StaticText(sb, label = 'S'), 0, lflags),
+                (wx.StaticText(sb, label = 's'), 0, lflags),
         ])
         fgs.AddMany([
             (wx.StaticText(sb, label = 'SC Rel', name = f'label_sc_rel'), 0, a), (s1,), 
@@ -1103,8 +1135,8 @@ class LayoutGen:
         fgs.AddMany(gen('Cell 20%', 'cap_20', 'mV'))
         fgs.AddMany(gen('Cell 0%', 'cap_0', 'mV'))
         fgs.AddMany(gen('Dsg Rate', 'dsg_rate', '%', 1))
-        fgs.AddMany(gen('FET ctrl', 'fet_ctrl', 'S'))
-        fgs.AddMany(gen('LED timer', 'led_timer', 'S'))
+        fgs.AddMany(gen('FET ctrl', 'fet_ctrl', 's'))
+        fgs.AddMany(gen('LED timer', 'led_timer', 's'))
 
     def faultCountsLayout(self, parent, sizer, colGap, boxGap):
         panel = wx.Panel(parent)
@@ -1269,6 +1301,8 @@ class LayoutGen:
         gbs.Add(hbs, wx.GBPosition(row,1))
         hbs.Add(wx.TextCtrl(sb, value='', name=f'set_pack_cap_rem', size=self.txtSize5), 0)
         hbs.Add(wx.Button(sb, label='Set', name='set_pack_cap_rem_btn'))
+        hbs.AddSpacer(20)
+        hbs.Add(wx.Button(sb, label='Clear Password', name = 'clear_password_btn'))
  
 class RoundGauge(wx.Panel):
     def __init__(self, *args, **kwargs):
@@ -1674,6 +1708,15 @@ class Main(wx.Frame):
         self.debugWindow.Hide()
         self.debugWindowItem.Check(False)
 
+    def showPasswordError(self):
+        with PasswordErrorDialog(None) as d:
+            ret = d.ShowModal()
+
+            if ret == wx.ID_CANCEL:
+                return
+            else:
+                self.clearPassword()
+
     def chooseSerialPort(self):
         with SerialPortDialog(None, port = self.j.serial.port) as d:
             if d.ShowModal() == wx.ID_CANCEL:
@@ -1796,8 +1839,10 @@ class Main(wx.Frame):
         if isinstance(evt.data, Exception):
             traceback.print_tb(evt.data.__traceback__)
             print(f'eeprom error: {repr(evt.data)}', file=sys.stderr)
-            if isinstance(evt.data, jbd.BMSError):
-                wx.LogError(f'Unable to communicate with BMS')
+            if isinstance(evt.data, jbd.BMSPasswordError):
+                self.showPasswordError()
+            elif isinstance(evt.data, jbd.BMSError):
+                wx.LogError(f'Unable to communicate with BMS{f" ({evt.data})" if evt.data else ""}')
         elif evt.data is not None:
             self.scatterEeprom(evt.data)
         else:
@@ -1893,6 +1938,8 @@ class Main(wx.Frame):
             self.balExit()
         elif n == 'set_pack_cap_rem_btn':
             self.setPackCapRem()
+        elif n == 'clear_password_btn':
+            self.clearPassword()
         else:
             print(f'unknown button {n}')
 
@@ -2032,6 +2079,19 @@ class Main(wx.Frame):
             self.calTab.Enable(False)
             self.j.balExit()
         except:
+            traceback.print_exc()
+        finally:
+            self.calTab.Enable(True)
+            self.accessLock.release()
+    
+    def clearPassword(self):
+        try:
+            self.accessLock.acquire()
+            self.calTab.Enable(False)
+            self.j.clearPassword()
+            wx.LogMessage(f'Password successfully cleared')
+        except:
+            wx.LogMessage(f'Password clear failed')
             traceback.print_exc()
         finally:
             self.calTab.Enable(True)

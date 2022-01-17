@@ -261,6 +261,54 @@ class BitfieldReg(BaseReg):
         value = BitfieldParser.encode(self._values.values())
         return struct.pack('>H', value)
 
+class BinaryReg(BaseReg):
+    def __init__(self, regName, adx):
+        self._regName = regName
+        self._adx = adx
+        self._value = b''
+
+    def set(self, valueName, value):
+        if isinstance(value, str):
+            self._value = bytes(value, 'utf-8')
+        else:
+            self._value = bytes(value)
+
+    def get(self, valueName):
+        return self._value
+
+    def pack(self):
+        return self._value
+
+    def unpack(self, payload):
+        self._value = payload
+
+class UsePasswordReg(BinaryReg):
+    def pack(self):
+        l = len(self._value)
+        return struct.pack(f'B{l}s', l, self._value)
+
+    def set(self, valueName, value):
+        assert len(value) == 6
+        super().set(valueName, value)
+
+class SetPasswordReg(BinaryReg):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.setNewPassword(bytes(6))
+    
+    def setNewPassword(self, value):
+        assert len(value) == 6
+        if isinstance(value, str):
+            self._new = bytes(value, 'utf-8')
+        else:
+            self._new = bytes(value)
+
+    def pack(self):
+        l = len(self._value) + len(self._new)
+        old_l = len(self._value)
+        new_l = len(self._new)
+        return struct.pack(f'B{old_l + new_l}s', l, self._value + self._new)
+
 class StringReg(BaseReg):
     def __init__(self, regName, adx, maxLen = 31):
         self._regName = regName
