@@ -77,7 +77,9 @@ While the GUI itself is wxpython and doesn't technically _need_ to be built, but
 1. make
 
 
-
+note: using pyinstaller 4.8 produced a few errors when trying to run the exe.
+I had success with pyinstaller 3.6 and whatever comes with the windows store version of python.
+Using python 3.9.10
 
 
 

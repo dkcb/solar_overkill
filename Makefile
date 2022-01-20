@@ -23,7 +23,8 @@ $(COMMIT_HASH_PYTHON):
 FORCE:
 
 build:
-	python3 setup.py build
+	#python3 setup.py build
+	python setup.py build
 
 gui: $(COMMIT_HASH_PYTHON) build
 	if [[ "$$OSTYPE" == "linux-gnu" ]]; then
