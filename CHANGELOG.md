@@ -2,6 +2,12 @@
 
 ## Changelog
 
+### v2.1.1 2022-1-20
+
+* Forked to Overkill Solar, changed labels and support email and added links to Overkill Solar.com. 
+* EP added password reset functions before the fork
+* used pyinstaller 3.6 in an attempt to stop false positive virus id
+
 ### v1.1.3 2021-3-24
 
 * GUI Fix: Clearing error counts no longer turns the labels to `0`
