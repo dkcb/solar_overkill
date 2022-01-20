@@ -48,7 +48,7 @@ gui: $(COMMIT_HASH_PYTHON) build
 		--distpath=../dist \
 		--workpath=../build \
 		--add-data "img$${PATHSEP}img" \
-		-n bms_tools_jbd_$${OS_NAME}_$(if $(EXACT_TAG),$(EXACT_TAG),$(COMMIT_HASH))
+		-n Overkill-Solar-bms-tools_$${OS_NAME}_$(if $(EXACT_TAG),$(EXACT_TAG),$(COMMIT_HASH))
 		rm -Rf *.spec
 	popd
 	rm $(COMMIT_HASH_PYTHON)
