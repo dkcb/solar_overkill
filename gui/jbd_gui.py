@@ -343,7 +343,7 @@ class PasswordErrorDialog(wx.Dialog):
 
         vbox = wx.BoxSizer(wx.VERTICAL)
         hbox = wx.BoxSizer()
-        hbox.Add(wx.StaticText(self, label="BMS reports incorrect password"), 0, wx.ALIGN_CENTER , border = 5)
+        hbox.Add(wx.StaticText(self, label="BMS rejected the password"), 0, wx.ALIGN_CENTER , border = 5)
         vbox.Add(hbox, 1, wx.ALIGN_CENTER_HORIZONTAL | wx.TOP, 5)
 
         hbox = wx.BoxSizer(wx.HORIZONTAL)

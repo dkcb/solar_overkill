@@ -358,19 +358,8 @@ class JBD:
 
     def enterFactory(self):
         try:
+            self.wakeBMS()
             self.open()
-            if 1:
-                cnt = 5
-                while cnt:
-                    try:
-                        self._sendPassword()
-                        break
-                    except Exception as e:
-                        self.dbgPrint(f'password exception {repr(e)}')
-                    cnt -= 1
-                    time.sleep(.3)
-                else:
-                    raise BMSPasswordError('bad password')
 
             cnt = 5
             while cnt:
@@ -383,6 +372,7 @@ class JBD:
                 self.dbgPrint('enter factory: no response')
                 cnt -= 1
                 time.sleep(.3)
+                self.loopPassword()
             return False
         finally:
             self.close()
@@ -418,6 +408,19 @@ class JBD:
         ok, payload = self.readPacket()
         if not ok: raise BMSError()
         if payload is None: raise TimeoutError()
+
+    def loopPassword(self):
+        cnt = 5
+        while cnt:
+            try:
+                self._sendPassword()
+                break
+            except Exception as e:
+                self.dbgPrint(f'password exception {repr(e)}')
+            cnt -= 1
+            time.sleep(.3)
+        else:
+            raise BMSPasswordError('bad password')
 
     def setPassword(self, password):
         if isinstance(password, str):
@@ -566,6 +569,17 @@ class JBD:
             return dict(self.basicInfoReg)
         finally:
             self.close()
+
+    def wakeBMS(self):
+        cnt = 5
+        while cnt:
+            try:
+                self.readBasicInfo()
+                break
+            except:
+                cnt -= 1
+                time.sleep(.3)
+        raise BMSError()
 
     def readCellInfo(self):
         try:
