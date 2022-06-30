@@ -1,0 +1,10 @@
+open a Git Bash window (MINGW64)
+
+$cd to the project folder
+
+$make
+
+create a new release in gitlab to get the version number to change
+
+I used the most recent pyinstaller for v2.1.2, which is 5.1 I think.
+Previously I had to go down to pyinstaller 3.something to avoid antivirus false positives.
