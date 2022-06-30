@@ -2,6 +2,10 @@
 
 ## Changelog
 
+### v2.1.2 2022-6-30
+
+* adapt password functions to new firmware behavior
+
 ### v2.1.1 2022-1-20
 
 * Forked to Overkill Solar, changed labels and support email and added links to Overkill Solar.com. 
