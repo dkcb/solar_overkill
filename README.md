@@ -4,13 +4,13 @@
 
 Download the latest release package here: https://gitlab.com/Overkill-Solar-LLC/overkill-solar-bms-tools/-/releases
 
-The zip file contains a .EXE and backup BMS configuration files.
+The zip file contains an .EXE file and backup BMS configuration files.
 
 Extract the .ZIP on your computer then run the .EXE
 
 Windows may warn you about an unknown program, click "more info" and "run anyway"
 
-## Screenshot
+## Screenshots
 
 <a href="doc_img/windows-info-screenshot.png"><img src="doc_img/windows-info-screenshot.png" width="250"/></a><br>
 Windows version, cell info tab.
