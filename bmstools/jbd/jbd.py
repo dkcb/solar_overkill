@@ -581,7 +581,7 @@ class JBD:
                 time.sleep(.3)
             else:
                 break
-        if cnt == 0
+        if cnt == 0:
             raise BMSError()
 
     def readCellInfo(self):
