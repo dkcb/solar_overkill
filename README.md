@@ -1,12 +1,14 @@
 # BMS Tools
 
-## How to Install
+## How to Install in Windows
 
 Download the latest release package here: https://gitlab.com/Overkill-Solar-LLC/overkill-solar-bms-tools/-/releases
 
-The zip file contains an .EXE file and backup BMS configuration files.
+(Not the source code, you want the windows build package)
 
-Extract the .ZIP on your computer then run the .EXE
+The zip contains an .EXE file and BMS backup configuration files.
+
+Extract the .ZIP on your computer then run the .EXE (No actual installation is needed)
 
 Windows may warn you about an unknown program, click "more info" and "run anyway"
 
