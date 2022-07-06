@@ -4,7 +4,7 @@
 
 Download the latest release package here: https://gitlab.com/Overkill-Solar-LLC/overkill-solar-bms-tools/-/releases
 
-(Not the source code, you want the windows build package)
+(You want the windows build package, not the source code.)
 
 The zip contains an .EXE file and BMS backup configuration files.
 
