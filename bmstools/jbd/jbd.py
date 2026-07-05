@@ -66,7 +66,7 @@ class JBD:
         try:
             self.s.close()
             s.timeout=0.5
-        except: 
+        except Exception: 
             pass
         self._open_cnt = 0
         self._lock = threading.RLock()
@@ -205,7 +205,16 @@ class JBD:
 
     @staticmethod
     def chksum(payload):
-        return 0x10000 - sum(payload)
+        return (0x10000 - sum(payload)) & 0xFFFF
+
+    @classmethod
+    def verifyChecksum(cls, frame):
+        datalen = frame[3]
+        if len(frame) < 7 + datalen:
+            return False
+        calc = cls.chksum(frame[2:4 + datalen])
+        recv = (frame[4 + datalen] << 8) | frame[5 + datalen]
+        return calc == recv
 
     def extractPayload(self, data):
         assert len(data) >= 7
@@ -237,7 +246,7 @@ class JBD:
                     try:
                         payload = str(payload, 'utf-8')
                         print('dbg >', payload)
-                    except:
+                    except Exception:
                         print(' '.join([f'{i:02X}' for i in payload]))
                 else:
                     self.bkgReadQ.put((ok, payload))
@@ -272,26 +281,43 @@ class JBD:
     def _readPacket(self, timeout = None):
         t = timeout if timeout is not None else self.timeout
         then = time.time() + t
-        #self.dbgPrint(f'timeout is {t}')
-        d = []
-        msgLen = 0
+        d = bytearray()
         complete = False
         while then > time.time():
-            byte = self.s.read()
-            if not byte: 
-                continue
-            #self.dbgPrint(f'raw rx byte: {byte}')
-            byte = byte[0]
-            if not d and byte != self.START: continue
+            if not d:
+                # scan for the start byte, one byte at a time
+                byte = self.s.read()
+                if not byte:
+                    continue
+                if byte[0] != self.START:
+                    continue
+                d += byte
+            elif len(d) < 4:
+                # read the rest of the header (reg, status, length) in bulk
+                chunk = self.s.read(4 - len(d))
+                if not chunk:
+                    continue
+                d += chunk
+            else:
+                # read data, checksum and end byte in bulk
+                msgLen = d[3]
+                remaining = 7 + msgLen - len(d)
+                if remaining <= 0:
+                    complete = True
+                    break
+                chunk = self.s.read(remaining)
+                if not chunk:
+                    continue
+                d += chunk
+                if len(d) >= 7 + msgLen:
+                    complete = True
+                    break
             then = time.time() + t
-            d.append(byte)
-            if len(d) == 4:
-                msgLen = d[-1]
-            if byte == self.END and len(d) >= 7 + msgLen: 
-                complete = True
-                break
-        if d and complete:
+        if d and complete and d[-1] == self.END:
             self.dbgPrint('readPacket:', self.toHex(d))
+            if not self.verifyChecksum(d):
+                self.dbgPrint('readPacket: checksum mismatch')
+                return False, None, None
             reg = d[1]
             ok = not d[2]
             return ok, reg, self.extractPayload(bytes(d))
@@ -452,7 +478,7 @@ class JBD:
                     if not ok: raise BMSError()
                     if payload is None: raise TimeoutError()
                     break
-                except:
+                except Exception:
                     cnt -= 1
         finally:
             self.close()
@@ -576,11 +602,9 @@ class JBD:
             try:
                 self.readBasicInfo()
                 break
-            except:
+            except Exception:
                 cnt -= 1
                 time.sleep(.3)
-            else:
-                break
         if cnt == 0:
             raise BMSError()
 

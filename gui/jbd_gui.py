@@ -210,7 +210,6 @@ class PulseText(wx.StaticText):
 
     def _pulse(self, evt):
         self._pulseCnt += 1
-        print(f'pulse {self._pulseCnt}')
         if self._pulseCnt == 5:
             self.timer.Stop()
 
@@ -2242,6 +2241,7 @@ class BkgWorker:
         self.scan_thread = None
         self.scan_run = False
         self.scan_delay = 1
+        self.device_info_cache = None
 
     def progress(self, value):
         wx.PostEvent(self.parent, self.EepProg(value = value))
@@ -2281,12 +2281,10 @@ class BkgWorker:
         def progAdapter(n):
             nonlocal cnt, cur
             pct = int(cur / cnt * 100)
-            print('cal prog', pct)
             self.progress(pct)
             cur += 1
 
         try:
-            print('calibrate start')
             self.j.calCell(cellData, progAdapter)
             self.j.calNtc(ntcData, progAdapter)
             wx.PostEvent(self.parent, self.CalDone(err = None))
@@ -2294,24 +2292,33 @@ class BkgWorker:
             wx.PostEvent(self.parent, self.CalDone(err = e))
         finally:
             self.progress(100)
-            print('calibrate end')
+
+    def readInfoCached(self):
+        # device info is static; read it once per scan session instead of
+        # on every poll cycle to reduce serial traffic
+        try:
+            self.j.open()
+            basic = self.j.readBasicInfo()
+            cell = self.j.readCellInfo()
+            if self.device_info_cache is None:
+                self.device_info_cache = self.j.readDeviceInfo()
+            return basic, cell, self.device_info_cache
+        finally:
+            self.j.close()
 
     def scanWorker(self):
         try:
-            print('scan start')
             while True:
                 then = time.time()
                 if self.parent.accessLock.acquire(timeout=0):
                     try:
 
-                        basicInfo, cellInfo, deviceInfo = self.j.readInfo()
+                        basicInfo, cellInfo, deviceInfo = self.readInfoCached()
                         wx.PostEvent(self.parent, self.ScanData(basicInfo = basicInfo, cellInfo = cellInfo, deviceInfo = deviceInfo))
                     except Exception as e:
                         wx.PostEvent(self.parent, self.ScanData(err = e))
                     finally:
                         self.parent.accessLock.release()
-                else:
-                    print('scan skipped -- BMS busy')
 
                 # attempt to compensate for read time
                 elapsed = time.time() - then
@@ -2330,10 +2337,11 @@ class BkgWorker:
                     if not self.scan_run: return
                     time.sleep(slp)
         finally:
-            print('scan terminated')
+            pass
     
     def startScan(self):
         if self.scan_thread: return
+        self.device_info_cache = None
         self.scan_thread = threading.Thread(target = self.scanWorker)
         self.scan_run = True
         self.scan_thread.start()
@@ -2351,6 +2359,7 @@ class BkgWorker:
         self.worker_thread.join(1)
         ret = not self.worker_thread.is_alive()
         self.worker_thread = None
+        return ret
 
 warningMsg = f'''Hi,
 
